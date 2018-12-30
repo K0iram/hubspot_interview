@@ -13,8 +13,7 @@ class Home extends Component {
     singapore: [],
     japan: [],
     uk: [],
-    france: [],
-    usaDates:[]
+    france: []
   }
 
   componentDidMount() {
@@ -39,14 +38,11 @@ class Home extends Component {
       uk: ukPartners,
       france: fraPartners,
     })
-
-    console.log(mexPartners)
   }
 
-  pickBestDates = (partners) => {
+  pickBestDates = (partners, country) => {
       let dates = {}
       partners.map(partner => {
-
         partner.availableDates.forEach(date => {
           dates.hasOwnProperty(date) ? (
             dates[date]++
@@ -62,32 +58,43 @@ class Home extends Component {
 
       for (let i = 0; i < datesArr.length; i++) {
         if((datesArr[i+1] && datesArr[i][1] === datesArr[i+1][1])){
-          if(bestDates.hasOwnProperty('date1') && datesArr[i][1] <= bestDates.date1.attendees) {
+          if(bestDates.hasOwnProperty('startDate') && datesArr[i][1] <= bestDates.startDate.attendeeCount) {
             bestDates = bestDates
           } else {
+            let people = this.state[country].filter(person => person.availableDates.includes(datesArr[i][0]))
+            let attendees = people.map(p => p.email)
+
             bestDates = {
-              'date1': {
+              'startDate': {
                 'date': datesArr[i][0],
-                'attendees': datesArr[i][1]
-              },
-              'date2': {
-                'date': datesArr[i+1][0],
-                'attendees': datesArr[i+1][1]
+                'attendeeCount': datesArr[i][1],
+                'attendees': attendees,
+                'name': country
               }
             }
           }
         }
       }
-      this.setState({usaDates: Object.values(bestDates)})
-      console.log(dates)
-      console.log(Object.values(bestDates))
+      this.setState({[country]: Object.values(bestDates)})
+    }
+
+    getAllDates = (countries) => {
+      countries.forEach(country => {
+        return this.pickBestDates(country[1], country[0])
+      })
     }
 
   render() {
+    const countriesArr = Object.entries(this.state)
     return (
       <div>
         <h1>Best Event Dates</h1>
-        <button onClick={() => this.pickBestDates(this.state.mexico)}>Get Dates</button>
+        <button onClick={() => this.getAllDates(countriesArr)} disabled={this.state.usa.length === 1}>Get Dates</button>
+        { this.state.usa.length === 1 &&
+          <div>
+            {JSON.stringify(this.state)}
+          </div>
+        }
       </div>
     )
   }
