@@ -40,42 +40,54 @@ class Home extends Component {
       france: fraPartners,
     })
 
-    console.log(usPartners)
+    console.log(mexPartners)
   }
 
   pickBestDates = (partners) => {
-    let dates = {}
-    partners.map(partner => {
-      partner.availableDates.forEach(date => {
-        dates.hasOwnProperty(date) ? (
-          dates[date]++
-        ) : (
-          dates[date] = 1
-        )
+      let dates = {}
+      partners.map(partner => {
+
+        partner.availableDates.forEach(date => {
+          dates.hasOwnProperty(date) ? (
+            dates[date]++
+          ) : (
+            dates[date] = 1
+          )
+        })
       })
-    })
-    //loop thru the datesArr and check to see if the dates attendance value is higher or
-    //equal to the next day and set them the 2 best dates.
-    //
-    //TODO: fix sorting of dates and return array index.
-    let datesArr = Object.entries(dates)
-    let currBestDates = {}
-    for (var i = 0; i < datesArr.length; i++) {
-      if(dates[i+1] && dates[i][1] >= dates[i+1][1]){
-        currBestDates['date1'] = dates[i][0]
-        currBestDates['date2'] = dates[i+1][0]
+
+      let datesArr = Object.entries(dates).sort((a,b) => a[0].split('-').join('') - b[0].split('-').join(''))
+
+      let bestDates = {}
+
+      for (let i = 0; i < datesArr.length; i++) {
+        if((datesArr[i+1] && datesArr[i][1] === datesArr[i+1][1])){
+          if(bestDates.hasOwnProperty('date1') && datesArr[i][1] <= bestDates.date1.attendees) {
+            bestDates = bestDates
+          } else {
+            bestDates = {
+              'date1': {
+                'date': datesArr[i][0],
+                'attendees': datesArr[i][1]
+              },
+              'date2': {
+                'date': datesArr[i+1][0],
+                'attendees': datesArr[i+1][1]
+              }
+            }
+          }
+        }
       }
+      this.setState({usaDates: Object.values(bestDates)})
+      console.log(dates)
+      console.log(Object.values(bestDates))
     }
-    this.setState({
-      usaDates: Object.values(currBestDates)
-    })
-  }
 
   render() {
     return (
       <div>
         <h1>Best Event Dates</h1>
-        <button onClick={() => this.pickBestDates(this.state.usa)}>Get Dates</button>
+        <button onClick={() => this.pickBestDates(this.state.mexico)}>Get Dates</button>
       </div>
     )
   }
